@@ -1,32 +1,34 @@
+import sklearn.model_selection
 import torch
 from torch.utils import data as data_
 import torch.nn as nn
 from torch.autograd import Variable
-import matplotlib.pypwslot as plt
 import torchvision
 import sklearn
-from keras.datasets import mnist
+from keras import datasets
+import matplotlib.pyplot as plt
 
 if not torch.cuda.is_available():
     print("fuck u")
     exit()
 
-(X_train, Y_train), (X_test, Y_test) = mnist.load_data()
+(X_train, Y_train), (X_test, Y_test) = datasets.mnist.load_data()
 
 X_train = X_train.astype('float32') / 255
 X_test = X_test.astype('float32') / 255
 
-features_train, features_test, targets_train, targets_test = sklearn.train_test_split(X_train, Y_train, test_size = 0.2, random_state = 42)
+features_train, features_test, targets_train, targets_test = sklearn.model_selection.train_test_split(X_train, Y_train, test_size = 0.2, random_state = 42)
 
 featuresTrain = torch.from_numpy(features_train)
 targetsTrain = torch.from_numpy(targets_train).type(torch.LongTensor) # data type is long
-
 featuresTest = torch.from_numpy(features_test)
 targetsTest = torch.from_numpy(targets_test).type(torch.LongTensor) # data type is long
 
 # Pytorch train and test TensorDataset
 train = torch.utils.data.TensorDataset(featuresTrain,targetsTrain)
 test = torch.utils.data.TensorDataset(featuresTest,targetsTest)
+
+
 
 # Hyper Parameters
 # batch_size, epoch and iteration
@@ -39,6 +41,7 @@ num_epochs = int(num_epochs)
 # Pytorch DataLoader
 train_loader = torch.utils.data.DataLoader(train, batch_size = batch_size, shuffle = True)
 test_loader = torch.utils.data.DataLoader(test, batch_size = batch_size, shuffle = True)
+
 
 # Create CNN Model
 class CNN_Model(nn.Module):
@@ -74,6 +77,7 @@ class CNN_Model(nn.Module):
         return out
 
 model = CNN_Model()
+model.cuda()
 print(model)
 optimizer = torch.optim.Adam(model.parameters(), lr=LR)   # optimize all cnn parameters
 loss_func = nn.CrossEntropyLoss()   # the target label is not one-hotted
@@ -82,6 +86,8 @@ input_shape = (-1,1,28,28)
 def fit_model(model, loss_func, optimizer, input_shape, num_epochs, train_loader, test_loader):
     # Traning the Model
     #history-like list for store loss & acc value
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    model.to(device)
     training_loss = []
     training_accuracy = []
     validation_loss = []
@@ -90,8 +96,9 @@ def fit_model(model, loss_func, optimizer, input_shape, num_epochs, train_loader
         #training model & store loss & acc / epoch
         correct_train = 0
         total_train = 0
-        for i, (images, labels) in enumerate(train_loader):
+        for images, labels in train_loader:
             # 1.Define variables
+            images, labels = images.to(device), labels.to(device)
             train = Variable(images.view(input_shape))
             labels = Variable(labels)
             # 2.Clear gradients
@@ -120,6 +127,7 @@ def fit_model(model, loss_func, optimizer, input_shape, num_epochs, train_loader
         correct_test = 0
         total_test = 0
         for images, labels in test_loader:
+            images, labels = images.to(device), labels.to(device)
             # 1.Define variables
             test = Variable(images.view(input_shape))
             # 2.Forward propagation
@@ -142,6 +150,10 @@ def fit_model(model, loss_func, optimizer, input_shape, num_epochs, train_loader
 
 def main():
     training_loss, training_accuracy, validation_loss, validation_accuracy = fit_model(model, loss_func, optimizer, input_shape, num_epochs, train_loader, test_loader)
+    training_loss = [loss.cpu().numpy() for loss in training_loss]
+    validation_loss = [loss.cpu().numpy() for loss in validation_loss]
+    training_accuracy = [acc.cpu().numpy() for acc in training_accuracy]
+    validation_accuracy = [acc.cpu().numpy() for acc in validation_accuracy]
     # visualization
     plt.plot(range(num_epochs), training_loss, 'b-', label='Training_loss')
     plt.plot(range(num_epochs), validation_loss, 'g-', label='validation_loss')
@@ -157,6 +169,7 @@ def main():
     plt.ylabel('Accuracy')
     plt.legend()
     plt.show()
+    torch.save(model.state_dict(), 'model.pth')
 
 
 if __name__ == '__main__':
