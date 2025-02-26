@@ -149,6 +149,16 @@ def fit_model(model, loss_func, optimizer, input_shape, num_epochs, train_loader
     return training_loss, training_accuracy, validation_loss, validation_accuracy
 
 def main():
+    # Hyper Parameters
+    # batch_size, epoch and iteration
+    LR = 0.01
+    batch_size = 100
+    n_iters = 10000
+    num_epochs = n_iters / (len(features_train) / batch_size)
+    num_epochs = int(num_epochs)
+    # Pytorch DataLoader
+    train_loader = torch.utils.data.DataLoader(train, batch_size = batch_size, shuffle = True)
+    test_loader = torch.utils.data.DataLoader(test, batch_size = batch_size, shuffle = True)
     training_loss, training_accuracy, validation_loss, validation_accuracy = fit_model(model, loss_func, optimizer, input_shape, num_epochs, train_loader, test_loader)
     training_loss = [loss.cpu().numpy() for loss in training_loss]
     validation_loss = [loss.cpu().numpy() for loss in validation_loss]
