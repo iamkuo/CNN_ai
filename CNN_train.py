@@ -29,20 +29,6 @@ train = torch.utils.data.TensorDataset(featuresTrain,targetsTrain)
 test = torch.utils.data.TensorDataset(featuresTest,targetsTest)
 
 
-
-# Hyper Parameters
-# batch_size, epoch and iteration
-LR = 0.01
-batch_size = 100
-n_iters = 10000
-num_epochs = n_iters / (len(features_train) / batch_size)
-num_epochs = int(num_epochs) 
-
-# Pytorch DataLoader
-train_loader = torch.utils.data.DataLoader(train, batch_size = batch_size, shuffle = True)
-test_loader = torch.utils.data.DataLoader(test, batch_size = batch_size, shuffle = True)
-
-
 # Create CNN Model
 class CNN_Model(nn.Module):
     def __init__(self):
