@@ -28,7 +28,6 @@ targetsTest = torch.from_numpy(targets_test).type(torch.LongTensor) # data type 
 train = torch.utils.data.TensorDataset(featuresTrain,targetsTrain)
 test = torch.utils.data.TensorDataset(featuresTest,targetsTest)
 
-
 # Create CNN Model
 class CNN_Model(nn.Module):
     def __init__(self):
@@ -140,8 +139,9 @@ def main():
     LR = 0.01
     batch_size = 100
     n_iters = 10000
-    num_epochs = n_iters / (len(features_train) / batch_size)
-    num_epochs = int(num_epochs)
+    num_epochs = 10
+    #num_epochs = n_iters / (len(features_train) / batch_size)
+    #num_epochs = int(num_epochs)
     # Pytorch DataLoader
     train_loader = torch.utils.data.DataLoader(train, batch_size = batch_size, shuffle = True)
     test_loader = torch.utils.data.DataLoader(test, batch_size = batch_size, shuffle = True)
