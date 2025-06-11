@@ -6,14 +6,6 @@ from tkinter import *
 from PIL import Image, ImageDraw, ImageTk
 import cv2
 
-# 載入 MNIST 測試資料集
-(_, _), (X_test, Y_test) = datasets.mnist.load_data()
-X_test = X_test.astype('float32') / 255
-
-
-# 轉換為 PyTorch 張量
-X_test_tensor = torch.from_numpy(X_test).unsqueeze(1)
-print(X_test_tensor.shape)
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 # 定義 CNN 模型
